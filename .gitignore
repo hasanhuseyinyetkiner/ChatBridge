@@ -1,0 +1,15 @@
+__pycache__/
+*.log
+*.tmp
+.vscode/
+.DS_Store
+node_modules/
+server.log
+server_test.log
+nohup.out
+.venv/
+venv/
+ENV/
+env/
+*.crx
+*.pem

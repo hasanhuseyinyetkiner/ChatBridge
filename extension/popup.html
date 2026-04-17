@@ -1,12 +1,289 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatBridge Panel</title>
   <style>
-    body { width: 200px; padding: 10px; text-align: center; font-family: sans-serif; }
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --status-bg: #f3f4f6;
+      --success: #10b981;
+      --error: #ef4444;
+      --cerebras: #000000;
+    }
+
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .header img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .status-card {
+      background: var(--status-bg);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .status-label {
+      color: var(--text-muted);
+    }
+
+    .status-value {
+      font-weight: 600;
+    }
+
+    .status-value.connected {
+      color: var(--success);
+    }
+
+    .status-value.disconnected {
+      color: var(--error);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    button.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-cerebras {
+      background: var(--cerebras) !important;
+      color: white !important;
+      border: none !important;
+    }
+
+    .btn-cerebras:hover {
+      opacity: 0.9;
+    }
+
+    .footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .provider-select {
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .provider-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .provider-btn {
+      padding: 8px 4px !important;
+      font-size: 11px !important;
+      border: 1px solid var(--border);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .provider-btn.active {
+      background: var(--primary) !important;
+      color: white !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      padding: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .icon-btn:hover {
+      color: var(--text);
+    }
   </style>
 </head>
+
 <body>
-  <h3>API Bridge</h3>
-  <p>Sunucuya baglaniyor...</p>
+  <div class="header">
+    <img src="assets/icon32.png" alt="logo">
+    <h1>ChatBridge Portal</h1>
+  </div>
+
+  <div class="content">
+    <div class="status-card">
+      <div class="status-item">
+        <span class="status-label">Server Bağlantısı:</span>
+        <span id="server-status" class="status-value disconnected">Bağlanıyor...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Aktif Sekme:</span>
+        <span id="tab-status" class="status-value">ChatGPT</span>
+      </div>
+    </div>
+
+    <div class="provider-select">
+      <div class="section-title">🤖 Sağlayıcı Seçimi</div>
+      <div class="provider-buttons">
+        <button id="set-chatgpt" class="provider-btn" data-provider="chatgpt">ChatGPT</button>
+        <button id="set-gemini" class="provider-btn" data-provider="gemini">Gemini</button>
+        <button id="set-cerebras" class="provider-btn" data-provider="cerebras">Cerebras</button>
+        <button id="set-both" class="provider-btn" data-provider="both">Her İkisi</button>
+      </div>
+
+      <div id="cerebras-model-select" style="margin-top: 10px; display: none;">
+        <div class="section-title">⚡ Cerebras Modeli</div>
+        <select id="cerebras-model"
+          style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px;">
+          <option value="llama3.1-8b">Llama 3.1 8B (En Hızlı)</option>
+          <option value="llama70b">Llama 3.3 70B (Güçlü)</option>
+          <option value="gptoss">GPT-OSS 120B (Gelişmiş)</option>
+          <option value="r1">DeepSeek R1 70B (Düşünsel)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button id="open-chatgpt" class="primary">
+        <span>🌐</span> ChatGPT Aç
+      </button>
+      <button id="open-gemini">
+        <span>💎</span> Gemini Aç
+      </button>
+      <button id="test-cerebras" class="btn-cerebras">
+        <span>⚡</span> Cerebras Test Et
+      </button>
+      <button id="open-devtools">
+        <span>🛠️</span> F12 Geliştirici Araçları
+      </button>
+      <button id="manage-keys-btn">
+        <span>🔑</span> API Anahtarlarını Yönet
+      </button>
+
+      <div id="keys-management"
+        style="display: none; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
+        <div class="section-title">🗝️ Cerebras API Anahtarları</div>
+        <textarea id="keys-input" placeholder="Her satıra bir anahtar gelecek şekilde yapıştırın..."
+          style="width: 100%; height: 80px; font-size: 10px; padding: 5px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 5px;"></textarea>
+        <button id="save-keys" class="primary" style="padding: 5px; font-size: 11px;">Anahtarları Kaydet</button>
+      </div>
+
+      <button id="refresh-scripts">
+        <span>🔄</span> Scriptleri Yenile
+      </button>
+
+      <div id="test-command-container" style="display: none; margin-top: 16px;">
+        <div class="section-title">🚀 Test Komutu</div>
+        <div style="position: relative;">
+          <pre id="test-command"
+            style="background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 6px; font-size: 10px; white-space: pre-wrap; word-break: break-all; margin: 0; padding-right: 35px;"></pre>
+          <button id="copy-command"
+            style="position: absolute; right: 5px; top: 5px; width: 28px; height: 28px; padding: 0; background: #334155; border: none; color: white;"
+            title="Kopyala">
+            📋
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    ChatBridge v1.0 &bull; GPT API Bridge
+  </div>
+
+  <script src="popup.js"></script>
 </body>
+
 </html>
